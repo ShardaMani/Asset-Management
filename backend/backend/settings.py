@@ -147,10 +147,11 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # If you build the React frontend into frontend/dashboard/build, include its static
-# assets so WhiteNoise can serve them directly in production.
-STATICFILES_DIRS = [
-    str(BASE_DIR / 'frontend' / 'dashboard' / 'build' / 'static'),
-]
+# assets so WhiteNoise can serve them directly in production. Only add the folder
+# when it actually exists (Render build may not run frontend build before
+# Django's collectstatic step), which avoids a noisy warning.
+_react_build_static = BASE_DIR / 'frontend' / 'dashboard' / 'build' / 'static'
+STATICFILES_DIRS = [str(_react_build_static)] if _react_build_static.exists() else []
 
 # Use WhiteNoise compressed manifest storage in production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
