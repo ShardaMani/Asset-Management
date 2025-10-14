@@ -40,8 +40,9 @@ export default function AssetMap() {
   const SELECT_ASSET_ID = 33;
 
   useEffect(() => {
-    const url = '/api/instances/map/'; // or 'http://localhost:8000/api/instances/map/' if no proxy
-    console.log('[AssetMap] fetching', url);
+    const API_BASE = (process.env.REACT_APP_API_URL || '').replace(/\/$/, '');
+    const url = API_BASE ? `${API_BASE}/api/instances/map/` : '/api/instances/map/';
+    console.log('[AssetMap] fetching', url, '(API_BASE=' + (API_BASE || '<empty>') + ')');
     fetch(url)
       .then(async (r) => {
         const ct = r.headers.get('content-type') || '';

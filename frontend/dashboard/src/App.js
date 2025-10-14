@@ -10,7 +10,8 @@ function App() {
 
   useEffect(() => {
     // fetch asset list to compute simple counts for the hero banner
-    const url = '/api/instances/map/';
+    const API_BASE = (process.env.REACT_APP_API_URL || '').replace(/\/$/, '');
+    const url = API_BASE ? `${API_BASE}/api/instances/map/` : '/api/instances/map/';
     fetch(url)
       .then((r) => r.json())
       .then((data) => {

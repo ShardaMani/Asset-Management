@@ -1,6 +1,10 @@
 # Asset Management (IIT Madras) — README
 
+<<<<<<< HEAD
 This repository contains a Django backend and a React frontend (Create React App) for the Asset Management used in the UI prototype. The frontend includes a Leaflet map (`react-leaflet`) that fetches asset instances from the backend and plots them on a map. The repo layout (important folders):
+=======
+This repository contains a Django backend and a React frontend (Create React App) for the Asset Management POC used in the UI prototype. The frontend includes a Leaflet map (`react-leaflet`) that fetches asset instances from the backend and plots them on a map. The repo layout (important folders):
+>>>>>>> f842e2e (Prepare backend for Render: env-driven settings, WhiteNoise, requirements and Procfile; update frontend API env usage)
 
 - backend/ — Django project (API with Django REST Framework)
 - frontend/dashboard/ — React app (Create React App) using `react-leaflet` and `leaflet`
@@ -116,4 +120,8 @@ git log --oneline -n 10
 - Allow selecting the `SELECT_ASSET_ID` via UI or URL parameter instead of hard-coding.
 
 ---
+<<<<<<< HEAD
 If you want, I can paste a slightly shorter README suitable for GitHub's first look, or include contributor / license sections. Which format would you like (detailed like above or short)?
+=======
+If you want, I can paste a slightly shorter README suitable for GitHub's first look, or include contributor / license sections. Which format would you like (detailed like above or short)?
+>>>>>>> f842e2e (Prepare backend for Render: env-driven settings, WhiteNoise, requirements and Procfile; update frontend API env usage)
