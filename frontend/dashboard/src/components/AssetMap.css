@@ -1,0 +1,18 @@
+.map-panel{
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  z-index: 999;
+  background: rgba(255,255,255,0.98);
+  color: #09306b;
+  padding: 12px 14px;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  max-width: 260px;
+  font-size: 13px;
+  border: 1px solid rgba(9,48,107,0.06);
+}
+.map-panel-title{ font-weight:700; margin-bottom:6px }
+.map-panel-row{ margin-bottom:6px }
+.map-panel-list{ max-height: 120px; overflow:auto }
+.map-panel-item{ padding:6px 0; border-bottom: 1px dashed rgba(9,48,107,0.04) }
