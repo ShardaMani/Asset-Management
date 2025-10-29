@@ -165,6 +165,71 @@ export default function AssetMap() {
     return [base[0] + offsetLat, base[1] + offsetLng];
   };
 
+  // Group assets by building (prefer building name) and by model counts
+  const buildName = (a) => {
+    if (!a) return null;
+    if (a.building && a.building.name) return String(a.building.name).trim();
+    if (a.room && a.room.building && a.room.building.name) return String(a.room.building.name).trim();
+    return null;
+  };
+
+  // Map building short names to provided coordinates (from user)
+  // Map building short names (and aliases) to provided coordinates (from user)
+  // You can extend this map with more buildings/aliases as needed.
+  const buildingCoordsMap = {
+    'SSB': [12.990573969684885, 80.23597925767275],
+    'BSB': [12.989921081620437, 80.2293315830051],
+    'NAC': [12.993215165951659, 80.23043991184161],
+    'Sharavathi': [12.9903974010947, 80.23410061715157],
+    // aliases (lowercase checked against building name)
+    'computer center': [12.990573969684885, 80.23597925767275],
+    'ssb': [12.990573969684885, 80.23597925767275],
+    'bsb': [12.989921081620437, 80.2293315830051],
+    'nac': [12.993215165951659, 80.23043991184161],
+    'sharavathi': [12.9903974010947, 80.23410061715157],
+  };
+
+  // Try to find coords for a building name with flexible matching (aliases / substrings)
+  const findCoordsForBuildingName = (name) => {
+    if (!name) return null;
+    const n = String(name).toLowerCase();
+    // exact key match
+    if (buildingCoordsMap[name]) return buildingCoordsMap[name];
+    if (buildingCoordsMap[n]) return buildingCoordsMap[n];
+    // substring/alias match
+    for (const [key, coords] of Object.entries(buildingCoordsMap)) {
+      if (!key) continue;
+      const kk = String(key).toLowerCase();
+      if (n.includes(kk) || kk.includes(n)) return coords;
+    }
+    return null;
+  };
+
+  // Build grouping structures
+  const groupedByBuilding = {};
+  const individualMarkers = [];
+  (assets || []).forEach((a) => {
+    if (!a) return;
+    // If asset has explicit lat/lon, keep it as an individual marker
+    if (a.latitude && a.longitude) {
+      individualMarkers.push(a);
+      return;
+    }
+    const bname = buildName(a);
+    const key = bname || `building_${getBuildingId(a) || 'unknown'}`;
+    if (!groupedByBuilding[key]) {
+      // decide coords: prefer named building mapping, else fallback building coords, else center
+      let coords = center;
+      if (bname && buildingCoordsMap[bname]) coords = buildingCoordsMap[bname];
+      else {
+        const bid = getBuildingId(a);
+        if (bid && fallbackBuildingCoords[bid]) coords = fallbackBuildingCoords[bid];
+      }
+      groupedByBuilding[key] = { coords, assets: [] , name: bname || null };
+    }
+    groupedByBuilding[key].assets.push(a);
+  });
+
   if (loading) return <div style={{ padding: 12 }}>Loading map data…</div>;
   if (error) return <div style={{ padding: 12, color: 'crimson' }}>Error loading map data: {error}</div>;
 
@@ -187,10 +252,11 @@ export default function AssetMap() {
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {assets.map((a) => {
+        {/* Individual asset markers (assets with explicit lat/lon) */}
+        {individualMarkers.map((a) => {
           const coords = getCoordsForAsset(a);
           return (
-            <Marker key={a.id} position={coords}>
+            <Marker key={`ind-${a.id}`} position={coords}>
               <Popup>
                 <div style={{ minWidth: 220 }}>
                   <strong>{a.tag || a.label || `Asset ${a.id}`}</strong>
@@ -199,6 +265,41 @@ export default function AssetMap() {
                   <div>Room: {a.room?.room_code || '-'}</div>
                   <div>Status: {a.is_active ? 'Active' : 'Inactive'}</div>
                   <div style={{ marginTop: 6, fontSize: 12 }}>{a.description || ''}</div>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
+        {/* Grouped markers per building (aggregate by model) */}
+        {Object.entries(groupedByBuilding).map(([key, group]) => {
+          const coords = group.coords || center;
+          const total = group.assets.length;
+          // compute counts per model
+          const modelCounts = {};
+          group.assets.forEach((x) => {
+            const m = x.asset_model?.model_name || 'Unknown';
+            modelCounts[m] = (modelCounts[m] || 0) + 1;
+          });
+          // create a simple divIcon that shows total count
+          const groupIcon = L.divIcon({
+            className: 'group-div-icon',
+            html: `<div class="group-badge">${total}</div>`,
+            iconSize: [30, 30],
+          });
+          return (
+            <Marker key={`grp-${key}`} position={coords} icon={groupIcon}>
+              <Popup>
+                <div style={{ minWidth: 220 }}>
+                  <strong>{group.name || key}</strong>
+                  <div style={{ marginTop: 6 }}>
+                    <em>Total assets:</em> <strong>{total}</strong>
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    {Object.entries(modelCounts).map(([m, c]) => (
+                      <div key={m}><strong>{m}</strong>: {c}</div>
+                    ))}
+                  </div>
                 </div>
               </Popup>
             </Marker>
